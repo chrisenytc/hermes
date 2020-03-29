@@ -13,6 +13,7 @@ class DataSource {
     const selector = "select[name='ctl00$ContentPlaceHolder_Content$ddlEstado'] option"
 
     const list = await page.evaluate(selector => {
+      // eslint-disable-next-line no-undef
       return [...document.querySelectorAll(selector)].map(function (element) {
         return {
           name: element.textContent,
@@ -40,6 +41,7 @@ class DataSource {
     await page.waitFor(5000)
 
     const list = await page.evaluate(selector => {
+      // eslint-disable-next-line no-undef
       return [...document.querySelectorAll(selector)].map(function (element) {
         return {
           name: element.textContent,
@@ -71,6 +73,7 @@ class DataSource {
     await page.waitFor(5000)
 
     const list = await page.evaluate(selector => {
+      // eslint-disable-next-line no-undef
       return [...document.querySelectorAll(selector)].map(function (element) {
         return {
           name: element.textContent,
@@ -87,7 +90,7 @@ class DataSource {
   }
 
   async getTravelAgencies(name, state, city, neighborhood) {
-    const browser = await puppeteer.launch({ headless: false })
+    const browser = await puppeteer.launch()
     const page = await browser.newPage()
     await page.goto(this.url)
 
@@ -110,31 +113,92 @@ class DataSource {
       page.click('a#ctl00_ContentPlaceHolder_Content_btnEnviar'),
     ])
 
+    let list = []
+
     const selector = 'div.blog-section > div.blog-post > div.post-box > div.post-content:first-child'
 
-    const list = await page.evaluate(selector => {
-      return [...document.querySelectorAll(selector)].map(function (element) {
-        return {
-          name: element.children[1].textContent,
-          address: element.children[2].textContent,
-          phoneNumber: element.children[3].textContent,
-          site: (element.children[4].textContent || '').replace('Site: ', ''),
-          email: (element.children[5].textContent || '').replace('E-mail: ', ''),
+    async function getList(selector) {
+      const results = await page.evaluate(selector => {
+        // eslint-disable-next-line no-undef
+        return [...document.querySelectorAll(selector)].map(function (element) {
+          const elementChildren = element.children
+
+          let el = {}
+
+          if (typeof elementChildren[1] !== 'undefined') {
+            el.name = elementChildren[1].textContent
+          }
+          if (typeof elementChildren[2] !== 'undefined') {
+            el.address = elementChildren[2].textContent
+          }
+          if (typeof elementChildren[3] !== 'undefined') {
+            el.phoneNumber = elementChildren[3].textContent
+          }
+          if (typeof elementChildren[4] !== 'undefined') {
+            if (elementChildren[4].textContent.startsWith('Site')) {
+              el.site = elementChildren[4].textContent
+            }
+            if (elementChildren[4].textContent.startsWith('E-mail')) {
+              el.email = elementChildren[4].textContent
+            }
+          }
+          if (typeof elementChildren[5] !== 'undefined') {
+            el.email = elementChildren[5].textContent
+          }
+
+          return el
+        })
+      }, selector)
+
+      return results
+    }
+
+    async function recursiveSearch() {
+      const paginationSelector = 'span#ctl00_ContentPlaceHolder_Content_dtpListagem_Resultados > a.Numeric_Links'
+
+      const paginationLinks = await page.evaluate(selector => {
+        // eslint-disable-next-line no-undef
+        return [...document.querySelectorAll(selector)].map(function (element) {
+          return {
+            pageNumber: element.textContent,
+          }
+        })
+      }, paginationSelector)
+
+      for (let index = 0; index < paginationLinks.length; ++index) {
+        let element = paginationLinks[index]
+
+        if (index === 0 && element.pageNumber === '...') {
+          continue
         }
-      })
-    }, selector)
+
+        // eslint-disable-next-line no-await-in-loop
+        await Promise.all([
+          page.waitForNavigation(),
+          page.click(`${paginationSelector}:nth-of-type(${index + 1})`),
+        ])
+
+        // eslint-disable-next-line no-await-in-loop
+        const result = await getList(selector)
+        // eslint-disable-next-line require-atomic-updates
+        list = list.concat(result)
+
+        if (element.pageNumber === '...') {
+          // eslint-disable-next-line no-await-in-loop
+          await recursiveSearch()
+        }
+      }
+    }
+
+    // eslint-disable-next-line require-atomic-updates
+    list = list.concat(await getList(selector))
+
+    await recursiveSearch()
 
     await browser.close()
 
     return list
   }
 }
-
-const ds = new DataSource();
-
-(async () => {
-  const states = await ds.getTravelAgencies('BLUE GATE TURISMO', 'SP', 'SÃO PAULO', 'Vila Olímpia')
-  console.log(states)
-})()
 
 module.exports = DataSource
