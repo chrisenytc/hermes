@@ -1,6 +1,6 @@
 {
   "name": "hermes-cli",
-  "description": "A cli tool to search travel agencies",
+  "description": "A CLI tool to search travel agencies in Brazil",
   "version": "1.0.0",
   "author": "Christopher Enytc <chris@enytc.com>",
   "bin": {
@@ -11,8 +11,11 @@
     "@oclif/command": "^1.5.19",
     "@oclif/config": "^1.14.0",
     "@oclif/plugin-help": "^2.2.3",
+    "inquirer": "^7.1.0",
+    "log-update": "^4.0.0",
     "puppeteer": "^2.1.1",
-    "ramda": "^0.27.0"
+    "ramda": "^0.27.0",
+    "string": "^3.3.3"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.22.2",
@@ -24,7 +27,7 @@
     "nyc": "^14.1.1"
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=12.0.0"
   },
   "files": [
     "/bin",
