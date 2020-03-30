@@ -1,7 +1,7 @@
 hermes-cli
 ==========
 
-A cli tool to search travel agencies
+> A CLI tool to search travel agencies in Brazil
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/hermes-cli.svg)](https://npmjs.org/package/hermes-cli)
@@ -9,8 +9,9 @@ A cli tool to search travel agencies
 [![License](https://img.shields.io/npm/l/hermes-cli.svg)](https://github.com/chrisenytc/hermes/blob/master/package.json)
 
 <!-- toc -->
-* [Usage](#usage)
-* [Commands](#commands)
+- [hermes-cli](#hermes-cli)
+- [Usage](#usage)
+- [Commands](#commands)
 <!-- tocstop -->
 # Usage
 <!-- usage -->
