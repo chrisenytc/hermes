@@ -1,12 +1,23 @@
 const {Command, flags} = require('@oclif/command')
 
+const Controller = require('./controller')
+const FileManager = require('./file-manager')
+
 class HermesCliCommand extends Command {
   async run() {
-    this.log('hello from ./src/index.js')
+    const ctl = new Controller(this.log)
+
+    this.log(FileManager.readBanner())
+
+    try {
+      await ctl.exportTravelAgencies()
+    } catch (error) {
+      this.log(error)
+    }
   }
 }
 
-HermesCliCommand.description = `A cli tool to search travel agencies
+HermesCliCommand.description = `A CLI tool to search travel agencies in Brazil
 
 Use this tool to export a list of travel agencies in json format
 `
